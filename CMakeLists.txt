@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8)
 project(udp-reader)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
-set(READER_NAME "udp-reader")
+set(READER_NAME "udp_reader")
 
 include_directories(include)
 
@@ -23,6 +23,13 @@ endif ()
 set_target_properties(${READER_NAME} PROPERTIES PUBLIC_HEADER "include/ReaderBase.hpp")
 install(
     TARGETS ${READER_NAME}
-    LIBRARY DESTINATION "lib/"
+    EXPORT "udp_reader-export"
+    LIBRARY DESTINATION "lib/${READER_NAME}"
+    ARCHIVE DESTINATION "lib/${READER_NAME}"
     PUBLIC_HEADER DESTINATION "include/${READER_NAME}"
+)
+install(
+    EXPORT "udp_reader-export"
+    FILE "udp_reader-config.cmake"
+    DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/udp_reader/cmake"
 )
