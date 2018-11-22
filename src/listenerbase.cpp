@@ -1,13 +1,19 @@
 #include "listenerbase.hpp"
 
 #include <sys/socket.h>
-#include <cstring>
 #include <stdexcept>
 #include <arpa/inet.h>
+#include <unistd.h>
+
+#include <iostream>
 
 
 using namespace udp_listener;
 
+
+ListenerBase::ListenerBase() : ListenerBase(-1, MAX_LENGTH_DEFAULT)
+{
+}
 
 ListenerBase::ListenerBase(unsigned int port, unsigned int max_length) :
     port(port), buffer_size(max_length), fd_socket(-1),
@@ -15,12 +21,23 @@ ListenerBase::ListenerBase(unsigned int port, unsigned int max_length) :
 {
     std::memset(&servaddr, 0, sizeof(servaddr));
     servaddr.sin_family = AF_INET;
+    servaddr.sin_port = htons(port);
     servaddr.sin_addr.s_addr = INADDR_ANY;
+
+    buffer = 0;
+    buffer_peek = new char[1];
+    buffer_peek[0] = 0;
+
+    setMode(NONBLOCKING);
 }
 
 ListenerBase::~ListenerBase()
 {
     deleteBuffer();
+    closeSocket();
+
+    delete buffer_peek;
+    buffer_peek = 0;
 }
 
 void ListenerBase::setPort(unsigned int port)
@@ -47,27 +64,48 @@ void ListenerBase::createSocket()
     // create socket file descriptor
     if ( (fd_socket = socket(AF_INET, SOCK_DGRAM, 0)) < 0 )
     {
-        throw std::runtime_error("could not create a socket");
+        throw std::runtime_error("could not create the socket");
     }
 
-    buffer = new char[buffer_size];
-    std::memset(buffer, 0, buffer_size * sizeof(char));
+    // bind the socket with the server address
+    if ( bind(fd_socket, (const struct sockaddr *) &servaddr, sizeof(servaddr)) < 0 )
+    {
+        throw std::runtime_error("could not bind the socket");
+    }
+
+    createBuffer();
 
     socket_created = true;
 }
 
-void ListenerBase::listen()
+void ListenerBase::closeSocket()
 {
-    unsigned int len = recvfrom(fd_socket, buffer, buffer_size,
-                        MSG_WAITALL, NULL, NULL);
-    validateData(buffer, len);
-    processData(buffer, len);
+    if (!socket_created)
+        return;
+
+    close(fd_socket);
 }
 
-void ListenerBase::deleteBuffer()
+bool ListenerBase::listen()
 {
-    if (buffer == 0)
-        return;
-    delete buffer;
-    buffer = 0;
+    if (!socket_created)
+    {
+        std::cerr << "[WARN] socket must be created before call to liten()" << std::endl;
+        return false;
+    }
+
+    unsigned int len;
+    // keeps reading until all messages have been read and only the latest one survives
+    while (true)
+    {
+        // read data
+        len = recvfrom(fd_socket, buffer, buffer_size, read_flags, NULL, NULL);
+
+        // peek the socket to see if there is more to be read
+        if (recvfrom(fd_socket, buffer_peek, 1, MSG_PEEK | MSG_DONTWAIT, NULL, NULL) < 0)
+            break;
+    }
+    if (!validateData(buffer, len))
+        return false;
+    return processData(buffer, len);
 }
