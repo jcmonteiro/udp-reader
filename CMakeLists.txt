@@ -22,13 +22,21 @@ include_directories(include)
 
 find_package(Boost COMPONENTS unit_test_framework)
 
-add_library(udp-listener SHARED "src/listenerbase.cpp")
+add_library(udp-reader SHARED "src/ReaderBase.cpp")
 
 # Unit tests
 if (Boost_FOUND)
     ADD_DEFINITIONS(-DBOOST_TEST_DYN_LINK)
-    add_executable(test-listener test/test_listenerbase.cpp)
-    target_include_directories(test-listener PRIVATE ${Boost_INCLUDE_DIRS})
-    target_link_libraries(test-listener ${Boost_LIBRARIES} udp-listener)
-    add_test(NAME test-1 COMMAND test-ident)
+    add_executable(test-reader "test/test_ReaderBase.cpp")
+    target_include_directories(test-reader PRIVATE ${Boost_INCLUDE_DIRS})
+    target_link_libraries(test-reader ${Boost_LIBRARIES} udp-reader)
+    add_test(NAME test-1 COMMAND test-reader)
 endif ()
+
+# Install
+set_target_properties(udp-reader PROPERTIES PUBLIC_HEADER "include/ReaderBase.hpp")
+install(
+    TARGETS udp-reader
+    LIBRARY DESTINATION "lib/"
+    PUBLIC_HEADER DESTINATION "include/udp-reader"
+)

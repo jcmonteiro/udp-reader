@@ -5,14 +5,14 @@
 #include <cstring>
 
 
-namespace udp_listener
+namespace udp_socket
 {
 
 
 /**
  * @brief The ListenerBase class implements a UDP listener that reads only the latest message
  */
-class ListenerBase
+class ReaderBase
 {
 public:
     const static unsigned int MAX_LENGTH_DEFAULT = 1024;
@@ -53,9 +53,9 @@ protected:
     virtual bool processData(const char * const buffer, unsigned int len) = 0;
 
 public:
-    ListenerBase();
-    ListenerBase(unsigned int port, unsigned int max_length);
-    ~ListenerBase();
+    ReaderBase();
+    ReaderBase(unsigned int port, unsigned int max_length);
+    ~ReaderBase();
 
     inline void setMaximumMessageLength(unsigned int max_length)
     {

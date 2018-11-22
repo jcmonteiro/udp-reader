@@ -1,14 +1,14 @@
 #define BOOST_TEST_MODULE ListenerBase test
 #include <boost/test/unit_test.hpp>
 
-#include "listenerbase.hpp"
+#include "ReaderBase.hpp"
 
 #include <iostream>
 #include <unistd.h>
 
-using namespace udp_listener;
+using namespace udp_socket;
 
-class SimpleListener : public ListenerBase
+class SimpleListener : public ReaderBase
 {
 protected:
     bool validateData(const char * const, unsigned int)
@@ -23,7 +23,7 @@ protected:
         return true;
     }
 public:
-    SimpleListener(unsigned int port, unsigned int max_length) : ListenerBase(port, max_length)
+    SimpleListener(unsigned int port, unsigned int max_length) : ReaderBase(port, max_length)
     {
     }
 };
@@ -40,7 +40,7 @@ BOOST_AUTO_TEST_CASE( test_listener )
 
     SimpleListener listener(port, max_length);
     listener.setPort(port);
-    listener.setMode(ListenerBase::BLOCKING);
+    listener.setMode(ReaderBase::BLOCKING);
 
     listener.createSocket();
     usleep(1000 * 1000 * sleep_secs); // microsec

@@ -1,4 +1,4 @@
-#include "listenerbase.hpp"
+#include "ReaderBase.hpp"
 
 #include <sys/socket.h>
 #include <stdexcept>
@@ -8,14 +8,14 @@
 #include <iostream>
 
 
-using namespace udp_listener;
+using namespace udp_socket;
 
 
-ListenerBase::ListenerBase() : ListenerBase(-1, MAX_LENGTH_DEFAULT)
+ReaderBase::ReaderBase() : ReaderBase(-1, MAX_LENGTH_DEFAULT)
 {
 }
 
-ListenerBase::ListenerBase(unsigned int port, unsigned int max_length) :
+ReaderBase::ReaderBase(unsigned int port, unsigned int max_length) :
     port(port), buffer_size(max_length), fd_socket(-1),
     socket_created(false)
 {
@@ -31,7 +31,7 @@ ListenerBase::ListenerBase(unsigned int port, unsigned int max_length) :
     setMode(NONBLOCKING);
 }
 
-ListenerBase::~ListenerBase()
+ReaderBase::~ReaderBase()
 {
     deleteBuffer();
     closeSocket();
@@ -40,13 +40,13 @@ ListenerBase::~ListenerBase()
     buffer_peek = 0;
 }
 
-void ListenerBase::setPort(unsigned int port)
+void ReaderBase::setPort(unsigned int port)
 {
     this->port = port;
     servaddr.sin_port = htons(port);
 }
 
-void ListenerBase::setAddress(const char *addr)
+void ReaderBase::setAddress(const char *addr)
 {
     if (inet_aton(addr, &servaddr.sin_addr) == 0)
     {
@@ -54,12 +54,12 @@ void ListenerBase::setAddress(const char *addr)
     }
 }
 
-void ListenerBase::clearAddress()
+void ReaderBase::clearAddress()
 {
     servaddr.sin_addr.s_addr = INADDR_ANY;
 }
 
-void ListenerBase::createSocket()
+void ReaderBase::createSocket()
 {
     // create socket file descriptor
     if ( (fd_socket = socket(AF_INET, SOCK_DGRAM, 0)) < 0 )
@@ -78,7 +78,7 @@ void ListenerBase::createSocket()
     socket_created = true;
 }
 
-void ListenerBase::closeSocket()
+void ReaderBase::closeSocket()
 {
     if (!socket_created)
         return;
@@ -86,7 +86,7 @@ void ListenerBase::closeSocket()
     close(fd_socket);
 }
 
-bool ListenerBase::listen()
+bool ReaderBase::listen()
 {
     if (!socket_created)
     {
