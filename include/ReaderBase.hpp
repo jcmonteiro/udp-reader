@@ -27,7 +27,7 @@ private:
     unsigned int port, buffer_size;
     struct sockaddr_in servaddr;
     int fd_socket;
-    char *buffer, *buffer_peek;
+    unsigned char *buffer, *buffer_peek;
     int read_flags;
 
     bool socket_created;
@@ -43,14 +43,14 @@ private:
     inline void createBuffer()
     {
         deleteBuffer();
-        buffer = new char[buffer_size];
+        buffer = new unsigned char[buffer_size];
         std::memset(buffer, 0, buffer_size * sizeof(char));
     }
 
 protected:
 
-    virtual bool validateData(const char * const buffer, unsigned int len) = 0;
-    virtual bool processData(const char * const buffer, unsigned int len) = 0;
+    virtual bool validateData(const unsigned char * const buffer, unsigned int len) = 0;
+    virtual bool processData(const unsigned char * const buffer, unsigned int len) = 0;
 
 public:
     ReaderBase();

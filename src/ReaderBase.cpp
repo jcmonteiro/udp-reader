@@ -25,7 +25,7 @@ ReaderBase::ReaderBase(unsigned int port, unsigned int max_length) :
     servaddr.sin_addr.s_addr = INADDR_ANY;
 
     buffer = 0;
-    buffer_peek = new char[1];
+    buffer_peek = new unsigned char[1];
     buffer_peek[0] = 0;
 
     setMode(NONBLOCKING);

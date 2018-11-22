@@ -11,13 +11,13 @@ using namespace udp_socket;
 class SimpleListener : public ReaderBase
 {
 protected:
-    bool validateData(const char * const, unsigned int)
+    bool validateData(const unsigned char * const, unsigned int)
     {
         std::cout << "validate" << std::endl;
         return true;
     }
 
-    bool processData(const char * const buffer, unsigned int len)
+    bool processData(const unsigned char * const buffer, unsigned int len)
     {
         std::printf("process (%d %s): %.*s\n", len, (len > 1) ? "bytes" : "byte", len, buffer);
         return true;
