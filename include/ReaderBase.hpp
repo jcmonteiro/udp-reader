@@ -55,7 +55,7 @@ protected:
 public:
     ReaderBase();
     ReaderBase(unsigned int port, unsigned int max_length);
-    ~ReaderBase();
+    virtual ~ReaderBase();
 
     inline void setMaximumMessageLength(unsigned int max_length)
     {
