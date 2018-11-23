@@ -20,7 +20,7 @@ if (Boost_FOUND)
 endif ()
 
 # Install
-set_target_properties(${READER_NAME} PROPERTIES PUBLIC_HEADER "include/ReaderBase.hpp")
+set_target_properties(${READER_NAME} PROPERTIES PUBLIC_HEADER "include/ReaderBase.hpp;include/Protocol.hpp")
 install(
     TARGETS ${READER_NAME}
     EXPORT "udp_reader-export"

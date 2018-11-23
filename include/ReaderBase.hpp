@@ -48,7 +48,6 @@ private:
     }
 
 protected:
-
     virtual bool validateData(const unsigned char * const buffer, unsigned int len) = 0;
     virtual bool processData(const unsigned char * const buffer, unsigned int len) = 0;
 
