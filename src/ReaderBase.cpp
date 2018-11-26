@@ -17,7 +17,7 @@ ReaderBase::ReaderBase() : ReaderBase(-1, MAX_LENGTH_DEFAULT)
 
 ReaderBase::ReaderBase(unsigned int port, unsigned int max_length) :
     port(port), buffer_size(max_length), fd_socket(-1),
-    socket_created(false)
+    socket_created(false), process_last(false)
 {
     std::memset(&servaddr, 0, sizeof(servaddr));
     servaddr.sin_family = AF_INET;
@@ -28,7 +28,7 @@ ReaderBase::ReaderBase(unsigned int port, unsigned int max_length) :
     buffer_peek = new unsigned char[1];
     buffer_peek[0] = 0;
 
-    setMode(NONBLOCKING);
+    setMode(NONBLOCKING | PROCESS_LAST);
 }
 
 ReaderBase::~ReaderBase()
@@ -44,6 +44,14 @@ void ReaderBase::setPort(unsigned int port)
 {
     this->port = port;
     servaddr.sin_port = htons(port);
+}
+
+void ReaderBase::setMode(unsigned int mode)
+{
+    process_last = (mode & 2) == PROCESS_LAST;
+    //
+    unsigned int bit_block = mode & 1;
+    read_flags = (bit_block == NONBLOCKING) ? MSG_DONTWAIT : MSG_WAITALL;
 }
 
 void ReaderBase::setAddress(const char *addr)
@@ -94,18 +102,33 @@ bool ReaderBase::listen()
         return false;
     }
 
-    unsigned int len;
+    int len;
+    bool ret = false;
     // keeps reading until all messages have been read and only the latest one survives
     while (true)
     {
         // read data
         len = recvfrom(fd_socket, buffer, buffer_size, read_flags, NULL, NULL);
+        if (len < 0)
+            break;
+
+        if (!process_last)
+        {
+            if (validateData(buffer, len))
+                ret |= processData(buffer, len);
+        }
 
         // peek the socket to see if there is more to be read
         if (recvfrom(fd_socket, buffer_peek, 1, MSG_PEEK | MSG_DONTWAIT, NULL, NULL) < 0)
             break;
     }
-    if (!validateData(buffer, len))
+
+    if (process_last && len >= 0)
+    {
+        if (validateData(buffer, len))
+            return processData(buffer, len);
         return false;
-    return processData(buffer, len);
+    }
+
+    return ret;
 }

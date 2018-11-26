@@ -19,8 +19,10 @@ public:
 
     enum Mode
     {
-        BLOCKING,
-        NONBLOCKING
+        NONBLOCKING = 1,
+        BLOCKING = 0,
+        PROCESS_LAST = 2,
+        PROCESS_ALL = 0
     };
 
 private:
@@ -30,7 +32,7 @@ private:
     unsigned char *buffer, *buffer_peek;
     int read_flags;
 
-    bool socket_created;
+    bool socket_created, process_last;
 
     inline void deleteBuffer()
     {
@@ -70,21 +72,10 @@ public:
     void setPort(unsigned int port);
 
     /**
-     * @brief setMode Sets the read mode.
+     * @brief setMode Sets the read mode, e.g. mode NONBLOCKING | PROCESS_LAST.
      * @param mode The read mode.
      */
-    inline void setMode(Mode mode)
-    {
-        switch (mode)
-        {
-        case BLOCKING:
-            read_flags = MSG_WAITALL;
-            break;
-        case NONBLOCKING:
-            read_flags = MSG_DONTWAIT;
-            break;
-        }
-    }
+    void setMode(unsigned int mode);
 
     /**
      * @brief setAddress Sets a specific address on which to establish a connection
@@ -107,6 +98,11 @@ public:
 
     void createSocket();
     void closeSocket();
+
+    /**
+     * @brief listen Returns true if ANY one of the reads is successful and false otherwise (ALL fail)
+     * @return The processing status
+     */
     bool listen();
 };
 
