@@ -9,6 +9,8 @@ include_directories(include)
 find_package(Boost COMPONENTS unit_test_framework)
 
 add_library(${READER_NAME} SHARED "src/ReaderBase.cpp")
+target_include_directories(${READER_NAME} PUBLIC
+    ${CMAKE_INSTALL_PREFIX}/include)
 
 # Unit tests
 if (Boost_FOUND)
